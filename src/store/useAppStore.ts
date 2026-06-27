@@ -10,6 +10,7 @@ import type {
   SpaceNews,
   ChatMessage,
   AccessibilitySettings,
+  AppSettings,
 } from '../types';
 
 const initialAccessibility: AccessibilitySettings = {
@@ -17,6 +18,18 @@ const initialAccessibility: AccessibilitySettings = {
   reducedMotion: false,
   fontSize: 'normal',
   screenReaderMode: false,
+  dyslexiaFont: false,
+  keyboardNavigation: false,
+};
+
+const initialSettings: AppSettings = {
+  theme: 'dark',
+  globeQuality: 'high',
+  animationSpeed: 'normal',
+  autoRefreshInterval: 30,
+  showOrbitTrails: true,
+  showLiveLabels: true,
+  showParticleBackground: true,
 };
 
 interface AppStore extends AppState {
@@ -33,6 +46,9 @@ interface AppStore extends AppState {
   toggleChat: () => void;
   toggleSearch: () => void;
   setAccessibility: (settings: Partial<AccessibilitySettings>) => void;
+  setSettings: (settings: Partial<AppSettings>) => void;
+  resetAccessibility: () => void;
+  resetSettings: () => void;
   setLanguage: (lang: string) => void;
   setZoomLevel: (level: number) => void;
   setLoading: (loading: boolean) => void;
@@ -56,6 +72,7 @@ const initialState: AppState = {
   isChatOpen: false,
   isSearchOpen: false,
   accessibility: initialAccessibility,
+  settings: initialSettings,
   language: 'en',
   zoomLevel: 1,
   isLoading: false,
@@ -85,6 +102,10 @@ export const useAppStore = create<AppStore>()(
       toggleSearch: () => set((state) => ({ isSearchOpen: !state.isSearchOpen })),
       setAccessibility: (settings) =>
         set((state) => ({ accessibility: { ...state.accessibility, ...settings } })),
+      setSettings: (settings) =>
+        set((state) => ({ settings: { ...state.settings, ...settings } })),
+      resetAccessibility: () => set({ accessibility: initialAccessibility }),
+      resetSettings: () => set({ settings: initialSettings }),
       setLanguage: (lang) => set({ language: lang }),
       setZoomLevel: (level) => set({ zoomLevel: level }),
       setLoading: (loading) => set({ isLoading: loading }),
@@ -99,6 +120,7 @@ export const useAppStore = create<AppStore>()(
       partialize: (state) => ({
         language: state.language,
         accessibility: state.accessibility,
+        settings: state.settings,
         dayNightMode: state.dayNightMode,
         showOrbitTrails: state.showOrbitTrails,
         showCloudLayer: state.showCloudLayer,

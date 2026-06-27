@@ -15,6 +15,7 @@ import {
 import { useAppStore } from '../store/useAppStore';
 import SettingsModal from './SettingsModal';
 import AccessibilityPanel from './AccessibilityPanel';
+import AboutProjectModal from './AboutProjectModal';
 
 const languages = [
   { code: 'en', name: 'English', native: 'EN' },
@@ -33,14 +34,15 @@ const languages = [
 
 interface NavbarProps {
   onMenuClick: () => void;
-  onInfoClick: () => void;
+  onInfoClick?: () => void;
 }
 
-export default function Navbar({ onMenuClick, onInfoClick }: NavbarProps) {
+export default function Navbar({ onMenuClick }: NavbarProps) {
   const { t, i18n } = useTranslation();
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const langRef = useRef<HTMLDivElement>(null);
   const { isChatOpen, toggleChat } = useAppStore();
@@ -61,6 +63,7 @@ export default function Navbar({ onMenuClick, onInfoClick }: NavbarProps) {
         setIsLangOpen(false);
         setIsSettingsOpen(false);
         setIsAccessibilityOpen(false);
+        setIsAboutOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -103,7 +106,11 @@ export default function Navbar({ onMenuClick, onInfoClick }: NavbarProps) {
         {/* Center - Navigation (Desktop) */}
         <div className="hidden lg:flex items-center gap-1">
           <NavItem icon={<Globe className="w-4 h-4" />} label="Globe" active />
-          <NavItem icon={<Info className="w-4 h-4" />} label={t('nav.about')} />
+          <NavItem
+            icon={<Info className="w-4 h-4" />}
+            label={t('nav.about')}
+            onClick={() => setIsAboutOpen(true)}
+          />
         </div>
 
         {/* Right - Actions (Always Visible) */}
@@ -183,11 +190,11 @@ export default function Navbar({ onMenuClick, onInfoClick }: NavbarProps) {
             <Settings className="w-4 h-4" />
           </button>
 
-          {/* Info Panel Toggle - Hidden on desktop */}
+          {/* About - Visible on mobile */}
           <button
-            onClick={onInfoClick}
-            className="hidden p-2 hover:bg-white/10 rounded-lg transition-colors xl:block"
-            aria-label="Info panel"
+            onClick={() => setIsAboutOpen(true)}
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors lg:hidden"
+            aria-label="About"
           >
             <Info className="w-4 h-4" />
           </button>
@@ -210,6 +217,7 @@ export default function Navbar({ onMenuClick, onInfoClick }: NavbarProps) {
       {/* Modals - z-index: 1300 */}
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
       <AccessibilityPanel isOpen={isAccessibilityOpen} onClose={() => setIsAccessibilityOpen(false)} />
+      <AboutProjectModal isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
     </>
   );
 }
@@ -218,13 +226,16 @@ function NavItem({
   icon,
   label,
   active = false,
+  onClick,
 }: {
   icon: React.ReactNode;
   label: string;
   active?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <button
+      onClick={onClick}
       className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm ${
         active
           ? 'bg-white/10 text-white'

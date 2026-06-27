@@ -124,6 +124,18 @@ export interface AccessibilitySettings {
   reducedMotion: boolean;
   fontSize: 'normal' | 'large' | 'xlarge';
   screenReaderMode: boolean;
+  dyslexiaFont: boolean;
+  keyboardNavigation: boolean;
+}
+
+export interface AppSettings {
+  theme: 'dark' | 'light' | 'auto';
+  globeQuality: 'low' | 'medium' | 'high';
+  animationSpeed: 'slow' | 'normal' | 'fast';
+  autoRefreshInterval: number;
+  showOrbitTrails: boolean;
+  showLiveLabels: boolean;
+  showParticleBackground: boolean;
 }
 
 export interface AppState {
@@ -139,6 +151,7 @@ export interface AppState {
   isChatOpen: boolean;
   isSearchOpen: boolean;
   accessibility: AccessibilitySettings;
+  settings: AppSettings;
   language: string;
   zoomLevel: number;
   isLoading: boolean;

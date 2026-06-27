@@ -5,27 +5,16 @@ import {
   X,
   Sun,
   Moon,
+  Monitor,
   Orbit,
-  Cloud,
-  Languages,
+  Tag,
+  Sparkles,
   Globe,
+  RotateCcw,
+  Zap,
+  Clock,
 } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
-
-const languages = [
-  { code: 'en', name: 'English' },
-  { code: 'ta', name: 'Tamil' },
-  { code: 'hi', name: 'Hindi' },
-  { code: 'te', name: 'Telugu' },
-  { code: 'ml', name: 'Malayalam' },
-  { code: 'kn', name: 'Kannada' },
-  { code: 'ja', name: 'Japanese' },
-  { code: 'zh', name: 'Chinese' },
-  { code: 'es', name: 'Spanish' },
-  { code: 'fr', name: 'French' },
-  { code: 'de', name: 'German' },
-  { code: 'ar', name: 'Arabic' },
-];
 
 export default function SettingsModal({
   isOpen,
@@ -34,21 +23,8 @@ export default function SettingsModal({
   isOpen: boolean;
   onClose: () => void;
 }) {
-  const { t, i18n } = useTranslation();
-  const {
-    dayNightMode,
-    toggleDayNight,
-    showOrbitTrails,
-    toggleOrbitTrails,
-    showCloudLayer,
-    toggleCloudLayer,
-    setLanguage,
-  } = useAppStore();
-
-  const handleLanguageChange = (code: string) => {
-    i18n.changeLanguage(code);
-    setLanguage(code);
-  };
+  const { t } = useTranslation();
+  const { settings, setSettings, resetSettings } = useAppStore();
 
   return (
     <AnimatePresence>
@@ -57,7 +33,7 @@ export default function SettingsModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/40 z-[1300] flex items-center justify-center p-4"
           onClick={onClose}
         >
           <motion.div
@@ -67,13 +43,13 @@ export default function SettingsModal({
             className="glass-panel max-w-md w-full max-h-[80vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
+            <div className="p-5">
+              <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
                     <Settings className="w-5 h-5 text-white" />
                   </div>
-                  <h2 className="font-orbitron text-xl font-bold">{t('settings.title')}</h2>
+                  <h2 className="font-orbitron text-lg font-bold">{t('settings.title')}</h2>
                 </div>
                 <button
                   onClick={onClose}
@@ -83,24 +59,116 @@ export default function SettingsModal({
                 </button>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-5">
+                {/* Theme Selection */}
                 <div>
                   <div className="flex items-center gap-2 text-white/60 mb-3">
-                    <Languages className="w-4 h-4" />
-                    <span className="text-sm font-medium">{t('settings.language')}</span>
+                    <Monitor className="w-4 h-4" />
+                    <span className="text-sm font-medium">{t('settings.theme')}</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
-                    {languages.map((lang) => (
+                    <button
+                      onClick={() => setSettings({ theme: 'dark' })}
+                      className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-all ${
+                        settings.theme === 'dark'
+                          ? 'bg-primary-500 text-white'
+                          : 'bg-white/5 hover:bg-white/10 text-white/70'
+                      }`}
+                    >
+                      <Moon className="w-4 h-4" />
+                      Dark
+                    </button>
+                    <button
+                      onClick={() => setSettings({ theme: 'light' })}
+                      className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-all ${
+                        settings.theme === 'light'
+                          ? 'bg-primary-500 text-white'
+                          : 'bg-white/5 hover:bg-white/10 text-white/70'
+                      }`}
+                    >
+                      <Sun className="w-4 h-4" />
+                      Light
+                    </button>
+                    <button
+                      onClick={() => setSettings({ theme: 'auto' })}
+                      className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-all ${
+                        settings.theme === 'auto'
+                          ? 'bg-primary-500 text-white'
+                          : 'bg-white/5 hover:bg-white/10 text-white/70'
+                      }`}
+                    >
+                      <Monitor className="w-4 h-4" />
+                      Auto
+                    </button>
+                  </div>
+                </div>
+
+                <div className="h-px bg-white/10" />
+
+                {/* Globe Quality */}
+                <div>
+                  <div className="flex items-center gap-2 text-white/60 mb-3">
+                    <Globe className="w-4 h-4" />
+                    <span className="text-sm font-medium">{t('settings.globeQuality')}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['low', 'medium', 'high'].map((quality) => (
                       <button
-                        key={lang.code}
-                        onClick={() => handleLanguageChange(lang.code)}
-                        className={`px-3 py-2 rounded-lg text-sm transition-all ${
-                          i18n.language === lang.code
+                        key={quality}
+                        onClick={() => setSettings({ globeQuality: quality as 'low' | 'medium' | 'high' })}
+                        className={`px-3 py-2.5 rounded-lg text-sm capitalize transition-all ${
+                          settings.globeQuality === quality
                             ? 'bg-primary-500 text-white'
                             : 'bg-white/5 hover:bg-white/10 text-white/70'
                         }`}
                       >
-                        {lang.name}
+                        {quality}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Animation Speed */}
+                <div>
+                  <div className="flex items-center gap-2 text-white/60 mb-3">
+                    <Zap className="w-4 h-4" />
+                    <span className="text-sm font-medium">{t('settings.animationSpeed')}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['slow', 'normal', 'fast'].map((speed) => (
+                      <button
+                        key={speed}
+                        onClick={() => setSettings({ animationSpeed: speed as 'slow' | 'normal' | 'fast' })}
+                        className={`px-3 py-2.5 rounded-lg text-sm capitalize transition-all ${
+                          settings.animationSpeed === speed
+                            ? 'bg-primary-500 text-white'
+                            : 'bg-white/5 hover:bg-white/10 text-white/70'
+                        }`}
+                      >
+                        {speed}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Auto Refresh Interval */}
+                <div>
+                  <div className="flex items-center gap-2 text-white/60 mb-3">
+                    <Clock className="w-4 h-4" />
+                    <span className="text-sm font-medium">{t('settings.autoRefresh')}</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[10, 30, 60, 120].map((interval) => (
+                      <button
+                        key={interval}
+                        onClick={() => setSettings({ autoRefreshInterval: interval })}
+                        className={`px-3 py-2.5 rounded-lg text-sm transition-all ${
+                          settings.autoRefreshInterval === interval
+                            ? 'bg-primary-500 text-white'
+                            : 'bg-white/5 hover:bg-white/10 text-white/70'
+                        }`}
+                      >
+                        {interval}s
                       </button>
                     ))}
                   </div>
@@ -108,35 +176,40 @@ export default function SettingsModal({
 
                 <div className="h-px bg-white/10" />
 
-                <div>
-                  <div className="flex items-center gap-2 text-white/60 mb-4">
-                    <Globe className="w-4 h-4" />
-                    <span className="text-sm font-medium">{t('settings.appearance')}</span>
-                  </div>
+                {/* Toggle Options */}
+                <div className="space-y-2">
+                  <ToggleItem
+                    icon={<Orbit className="w-4 h-4" />}
+                    label={t('settings.orbitTrails')}
+                    checked={settings.showOrbitTrails}
+                    onChange={() => setSettings({ showOrbitTrails: !settings.showOrbitTrails })}
+                  />
 
-                  <div className="space-y-3">
-                    <ToggleItem
-                      icon={dayNightMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                      label={t('settings.dayNight')}
-                      checked={dayNightMode}
-                      onChange={toggleDayNight}
-                    />
+                  <ToggleItem
+                    icon={<Tag className="w-4 h-4" />}
+                    label={t('settings.liveLabels')}
+                    checked={settings.showLiveLabels}
+                    onChange={() => setSettings({ showLiveLabels: !settings.showLiveLabels })}
+                  />
 
-                    <ToggleItem
-                      icon={<Orbit className="w-4 h-4" />}
-                      label={t('settings.orbitTrails')}
-                      checked={showOrbitTrails}
-                      onChange={toggleOrbitTrails}
-                    />
-
-                    <ToggleItem
-                      icon={<Cloud className="w-4 h-4" />}
-                      label={t('settings.cloudLayer')}
-                      checked={showCloudLayer}
-                      onChange={toggleCloudLayer}
-                    />
-                  </div>
+                  <ToggleItem
+                    icon={<Sparkles className="w-4 h-4" />}
+                    label={t('settings.particleBackground')}
+                    checked={settings.showParticleBackground}
+                    onChange={() => setSettings({ showParticleBackground: !settings.showParticleBackground })}
+                  />
                 </div>
+
+                <div className="h-px bg-white/10" />
+
+                {/* Reset Button */}
+                <button
+                  onClick={resetSettings}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-xl transition-all"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  {t('settings.resetDefaults')}
+                </button>
               </div>
             </div>
           </motion.div>
@@ -164,7 +237,7 @@ function ToggleItem({
     >
       <div className="flex items-center gap-3">
         <div className="text-white/60">{icon}</div>
-        <span>{label}</span>
+        <span className="text-sm">{label}</span>
       </div>
       <div
         className={`w-10 h-6 rounded-full p-0.5 transition-all ${

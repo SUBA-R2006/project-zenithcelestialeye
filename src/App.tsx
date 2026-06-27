@@ -18,16 +18,22 @@ function App() {
 
   useEffect(() => {
     document.documentElement.lang = language;
+
+    // High contrast mode
     if (accessibility.highContrast) {
       document.body.classList.add('high-contrast-mode');
     } else {
       document.body.classList.remove('high-contrast-mode');
     }
+
+    // Reduced motion
     if (accessibility.reducedMotion) {
       document.body.classList.add('reduced-motion');
     } else {
       document.body.classList.remove('reduced-motion');
     }
+
+    // Font size
     if (accessibility.fontSize === 'large') {
       document.body.classList.add('font-size-large');
       document.body.classList.remove('font-size-xlarge');
@@ -36,6 +42,13 @@ function App() {
       document.body.classList.remove('font-size-large');
     } else {
       document.body.classList.remove('font-size-large', 'font-size-xlarge');
+    }
+
+    // Dyslexia-friendly font
+    if (accessibility.dyslexiaFont) {
+      document.body.classList.add('dyslexia-font');
+    } else {
+      document.body.classList.remove('dyslexia-font');
     }
   }, [accessibility, language]);
 

@@ -345,6 +345,14 @@ body {
   font-size: 1.5em !important;
 }
 
+/* Dyslexia-Friendly Font */
+.dyslexia-font {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif !important;
+  letter-spacing: 0.05em !important;
+  word-spacing: 0.1em !important;
+  line-height: 1.5 !important;
+}
+
 /* Globe Label Styles */
 .globe-label {
   pointer-events: none;
