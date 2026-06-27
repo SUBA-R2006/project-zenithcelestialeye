@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from './components/Navbar';
 import EarthGlobe from './components/EarthGlobe';
@@ -10,10 +9,12 @@ import MobileNav from './components/MobileNav';
 import { useAppStore } from './store/useAppStore';
 
 function App() {
-  const { t } = useTranslation();
-  const { accessibility, language } = useAppStore();
+  const { accessibility, language, isChatOpen } = useAppStore();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isRightPanelOpen, setIsRightPanelOpen] = useState(false);
+  const [aiPanelWidth, setAiPanelWidth] = useState(400);
+  const [isResizing, setIsResizing] = useState(false);
+  const resizeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     document.documentElement.lang = language;
@@ -48,96 +49,153 @@ function App() {
     }
   }, []);
 
+  // Handle AI panel resize
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+  }, []);
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isResizing) return;
+      const newWidth = window.innerWidth - e.clientX;
+      const clampedWidth = Math.min(Math.max(newWidth, 320), 500);
+      setAiPanelWidth(clampedWidth);
+    },
+    [isResizing]
+  );
+
+  const handleMouseUp = useCallback(() => {
+    setIsResizing(false);
+  }, []);
+
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'ew-resize';
+      document.body.style.userSelect = 'none';
+    }
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isResizing, handleMouseMove, handleMouseUp]);
+
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const toggleRightPanel = () => setIsRightPanelOpen(!isRightPanelOpen);
 
   return (
-    <div className="dashboard-grid">
+    <div className="flex flex-col h-screen w-screen overflow-hidden">
+      {/* Fixed Navbar - Always visible */}
       <Navbar
         onMenuClick={toggleSidebar}
         onInfoClick={toggleRightPanel}
       />
 
-      <div className="dashboard-main relative overflow-hidden">
-        {/* Desktop Left Sidebar */}
-        <div className="hidden lg:block">
-          <LeftSidebar />
-        </div>
-
-        {/* Mobile/Tablet Drawer Overlay */}
+      {/* Main Content - Below navbar */}
+      <div className="main-content">
+        {/* Overlay for mobile sidebar */}
         <AnimatePresence>
           {isSidebarOpen && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="drawer-overlay open lg:hidden"
-                onClick={() => setIsSidebarOpen(false)}
-              />
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="sidebar-overlay open lg:hidden"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+          )}
+        </AnimatePresence>
+
+        {/* Dashboard Grid */}
+        <div className="dashboard-grid flex-1">
+          {/* Left Sidebar - Hidden on mobile */}
+          <div className="left-sidebar hidden lg:block">
+            <LeftSidebar />
+          </div>
+
+          {/* Mobile Left Sidebar Drawer */}
+          <AnimatePresence>
+            {isSidebarOpen && (
               <motion.div
                 initial={{ x: '-100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ type: 'spring', damping: 25 }}
-                className="drawer lg:hidden"
+                className="left-sidebar open lg:hidden"
               >
                 <LeftSidebar onClose={() => setIsSidebarOpen(false)} />
               </motion.div>
-            </>
-          )}
-        </AnimatePresence>
+            )}
+          </AnimatePresence>
 
-        {/* Globe Container - Takes remaining space */}
-        <div className="globe-container relative bg-cosmic-darker">
-          <EarthGlobe />
+          {/* Globe Container - Takes remaining space */}
+          <div className="globe-container">
+            <EarthGlobe />
+          </div>
+
+          {/* Right Panel - Hidden on smaller screens */}
+          <div className="right-panel hidden xl:block">
+            <RightPanel onClose={() => {}} />
+          </div>
+
+          {/* Mobile Right Panel Drawer */}
+          <AnimatePresence>
+            {isRightPanelOpen && (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="sidebar-overlay open xl:hidden"
+                  onClick={() => setIsRightPanelOpen(false)}
+                />
+                <motion.div
+                  initial={{ x: '100%' }}
+                  animate={{ x: 0 }}
+                  exit={{ x: '100%' }}
+                  transition={{ type: 'spring', damping: 25 }}
+                  className="ai-panel open xl:hidden"
+                  style={{ width: '85vw', maxWidth: '400px' }}
+                >
+                  <RightPanel onClose={() => setIsRightPanelOpen(false)} />
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
         </div>
 
-        {/* Desktop Right Panel */}
-        <div className="right-panel hidden xl:block">
-          <RightPanel />
-        </div>
-
-        {/* Mobile Right Drawer */}
+        {/* AI Chat Panel - Fixed right side, below navbar */}
         <AnimatePresence>
-          {isRightPanelOpen && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="drawer-overlay open xl:hidden"
-                onClick={() => setIsRightPanelOpen(false)}
+          {isChatOpen && (
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25 }}
+              className="ai-panel open"
+              style={{ width: `${aiPanelWidth}px` }}
+            >
+              {/* Resize handle */}
+              <div
+                ref={resizeRef}
+                className="ai-panel-resize hidden md:block"
+                onMouseDown={handleMouseDown}
               />
-              <motion.div
-                initial={{ x: '100%' }}
-                animate={{ x: 0 }}
-                exit={{ x: '100%' }}
-                transition={{ type: 'spring', damping: 25 }}
-                className="drawer drawer-right xl:hidden"
-              >
-                <RightPanel onClose={() => setIsRightPanelOpen(false)} />
-              </motion.div>
-            </>
+              <AIChat />
+            </motion.div>
           )}
         </AnimatePresence>
       </div>
-
-      {/* Footer */}
-      <footer className="hidden md:flex items-center justify-center text-xs text-white/40 border-t border-white/10 bg-cosmic-dark/50">
-        <span className="font-orbitron">{t('tagline')}</span>
-        <span className="mx-2">|</span>
-        <span>Project Zenith - The Celestial Eye</span>
-      </footer>
 
       {/* Mobile Bottom Navigation */}
       <MobileNav
         onSidebarClick={toggleSidebar}
         onRightPanelClick={toggleRightPanel}
       />
-
-      {/* AI Chat Overlay */}
-      <AIChat />
     </div>
   );
 }

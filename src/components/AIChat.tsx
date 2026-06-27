@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Send,
   Sparkles,
@@ -22,71 +22,64 @@ const aiResponses: Record<string, string[]> = {
     "Above your location, the brightest satellite visible is the ISS (International Space Station). It orbits at 420km with a speed of 7.66 km/s, completing one orbit every 90 minutes!",
     "There are over 6,000 active satellites orbiting Earth. About 52% are communication satellites like Starlink, 24% are navigation satellites like GPS, and 18% are Earth observation satellites monitoring climate and weather.",
   ],
-  iss: [
-    "The International Space Station (ISS) is humanity's largest space structure! Orbiting at 420 km altitude, it travels at 27,600 km/h (7.66 km/s), circling Earth every 90 minutes. The ISS has been continuously occupied since November 2000.",
-    "Fun fact: The ISS is so bright (magnitude -3.8) that it's visible even in light-polluted cities! It appears as a steady, fast-moving point of light. Use apps like ISS Detector to know when it passes over you.",
-    "The ISS weighs about 420,000 kg and has about 916 cubic meters of pressurized space - larger than a 6-bedroom house! It hosts up to 6 astronauts conducting experiments in microgravity.",
-  ],
-  orion: [
-    "Orion the Hunter is one of the most recognizable constellations! Named after a Greek mythological hunter, it features the famous 'Belt of Orion' - three bright stars in a row: Alnitak, Alnilam, and Mintaka.",
-    "Orion's brightest stars are Rigel (blue supergiant, 773 light-years away) and Betelgeuse (red supergiant, ~700 light-years). Betelgeuse is so huge that if placed at the Sun's position, it would engulf Mercury, Venus, Earth, and Mars!",
-    "Below Orion's belt lies the Orion Nebula (M42) - a stellar nursery 1,344 light-years away where new stars are being born. Visible to the naked eye as a fuzzy star, it's one of the most photographed objects in the night sky!",
+  constellations: [
+    "Tonight, you can see several prominent constellations! Orion is visible in the winter sky, while the Big Dipper (Ursa Major) is circumpolar and visible year-round in the northern hemisphere.",
+    "The constellation of Orion contains the famous Orion Nebula (M42), a stellar nursery where new stars are being born. It's visible to the naked eye as the middle 'star' of Orion's sword.",
+    "Different cultures have different names for constellations. What we call the Big Dipper is known as the Great Bear in Greek mythology, the Plough in the UK, and Saptarishi in Indian astronomy.",
   ],
   planets: [
-    "Tonight, Jupiter and Saturn are the most prominent planets visible. Venus (the 'Evening Star') is visible shortly after sunset, while Mars rises around midnight with its distinctive red-orange color.",
-    "Did you know? A day on Venus is longer than its year! Venus rotates so slowly that one day there equals 243 Earth days, while it orbits the Sun in just 225 days.",
-    "The gas giants Jupiter and Saturn are best viewed when they're at 'opposition' - opposite the Sun in our sky. Jupiter's 4 largest moons (Galilean moons) are visible with binoculars!",
+    "Currently in the night sky: Venus is the brightest 'evening star' visible after sunset. Jupiter and Saturn are also prominent this season, with Jupiter being the second brightest planet after Venus.",
+    "Mars is at opposition this month, meaning it's at its closest approach to Earth and visible all night long. Look for its distinctive red color rising in the east after sunset.",
+    "Mercury is tricky to spot! It's only visible shortly after sunset or before sunrise, never more than 28 degrees from the Sun. Best viewing opportunities occur during its greatest elongation.",
   ],
   general: [
-    "The universe is estimated to be 13.8 billion years old, containing over 200 billion galaxies, each with hundreds of billions of stars. Our Milky Way alone has 100-400 billion stars!",
-    "Light from the Sun takes 8 minutes to reach Earth. Light from the next nearest star (Proxima Centauri) takes over 4 years. The most distant visible star (Earendel) is 12.9 billion light-years away!",
-    "Space is mostly empty! If the Sun were the size of a white blood cell, the Milky Way would be the size of the continental United States. The nearest galaxy (Andromeda) is 25 Milky Way diameters away.",
-  ],
-  weather: [
-    "Solar weather can affect satellite operations! Solar flares and coronal mass ejections (CMEs) can disrupt communications and even cause satellite drag. Space agencies monitor 'space weather' continuously.",
-    "The aurora borealis (Northern Lights) is caused by solar particles interacting with Earth's magnetic field. During strong solar storms, auroras can be seen much farther south than usual!",
+    "I'm Zenith AI, your astronomy assistant! I can help you identify satellites, constellations, planets, and other celestial objects. Just ask me anything about the night sky!",
+    "The cosmos is vast and fascinating! Did you know that light from the nearest star system (Alpha Centauri) takes over 4 years to reach us? And that's considered 'close' in cosmic terms!",
+    "Space agencies worldwide are working on exciting missions. NASA's Artemis program aims to return humans to the Moon, while ESA's JUICE mission will explore Jupiter's icy moons.",
+    "The James Webb Space Telescope (JWST) is revolutionizing our understanding of the universe! Its infrared observations allow us to peer through cosmic dust and see the earliest galaxies.",
   ],
 };
 
-function getAIResponse(query: string): string {
-  const lowerQuery = query.toLowerCase();
+function getAIResponse(message: string): string {
+  const lowerMessage = message.toLowerCase();
+  let category = 'general';
 
-  if (lowerQuery.includes('satellite') || lowerQuery.includes('above') || lowerQuery.includes('tracking')) {
-    const responses = aiResponses.satellites;
-    return responses[Math.floor(Math.random() * responses.length)].replace('{count}', sampleSatellites.length.toString());
+  if (lowerMessage.includes('satellite') || lowerMessage.includes('iss') || lowerMessage.includes('hubble')) {
+    const count = sampleSatellites.length;
+    const response = aiResponses.satellites[Math.floor(Math.random() * aiResponses.satellites.length)];
+    return response.replace('{count}', String(count));
+  }
+  if (lowerMessage.includes('constellation') || lowerMessage.includes('star') || lowerMessage.includes('orion')) {
+    category = 'constellations';
+  }
+  if (lowerMessage.includes('planet') || lowerMessage.includes('mars') || lowerMessage.includes('jupiter') || lowerMessage.includes('venus')) {
+    category = 'planets';
   }
 
-  if (lowerQuery.includes('iss') || lowerQuery.includes('international space station')) {
-    return aiResponses.iss[Math.floor(Math.random() * aiResponses.iss.length)];
-  }
-
-  if (lowerQuery.includes('orion') || lowerQuery.includes('constellation')) {
-    return aiResponses.orion[Math.floor(Math.random() * aiResponses.orion.length)];
-  }
-
-  if (lowerQuery.includes('planet') || lowerQuery.includes('jupiter') || lowerQuery.includes('saturn') || lowerQuery.includes('venus') || lowerQuery.includes('mars')) {
-    return aiResponses.planets[Math.floor(Math.random() * aiResponses.planets.length)];
-  }
-
-  if (lowerQuery.includes('weather') || lowerQuery.includes('solar') || lowerQuery.includes('aurora')) {
-    return aiResponses.weather[Math.floor(Math.random() * aiResponses.weather.length)];
-  }
-
-  return aiResponses.general[Math.floor(Math.random() * aiResponses.general.length)];
+  return aiResponses[category][Math.floor(Math.random() * aiResponses[category].length)];
 }
 
 export default function AIChat() {
   const { t } = useTranslation();
-  const { chatMessages, addChatMessage, clearChat, isChatOpen, toggleChat } = useAppStore();
+  const { chatMessages, addChatMessage, clearChat } = useAppStore();
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [chatMessages]);
 
-  const handleSend = async () => {
+  // Quick suggestions
+  const suggestions = [
+    { icon: <Satellite className="w-3 h-3" />, text: t('ai.suggestions.satellites') },
+    { icon: <Star className="w-3 h-3" />, text: t('ai.suggestions.constellations') },
+    { icon: <Globe2 className="w-3 h-3" />, text: t('ai.suggestions.planets') },
+  ];
+
+  const handleSend = () => {
     if (!input.trim()) return;
 
     const userMessage: ChatMessage = {
@@ -100,12 +93,12 @@ export default function AIChat() {
     setInput('');
     setIsTyping(true);
 
+    // Simulate AI thinking
     setTimeout(() => {
-      const response = getAIResponse(input);
       const aiMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: response,
+        content: getAIResponse(input),
         timestamp: new Date(),
       };
       addChatMessage(aiMessage);
@@ -113,109 +106,102 @@ export default function AIChat() {
     }, 1000 + Math.random() * 1000);
   };
 
-  const suggestions = [
-    { icon: <Satellite className="w-4 h-4" />, text: t('chat.suggestions.whatSatellites') },
-    { icon: <Star className="w-4 h-4" />, text: t('chat.suggestions.explainOrion') },
-    { icon: <Globe2 className="w-4 h-4" />, text: t('chat.suggestions.whatIsISS') },
-  ];
+  const handleSuggestionClick = (text: string) => {
+    setInput(text);
+  };
 
   return (
-    <AnimatePresence>
-      {isChatOpen && (
-        <motion.div
-          initial={{ x: 400, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: 400, opacity: 0 }}
-          className="fixed right-0 top-16 bottom-0 w-full md:w-[400px] z-50 flex flex-col bg-cosmic-dark/95 backdrop-blur-xl border-l border-white/10"
-        >
-          <div className="flex items-center justify-between p-4 border-b border-white/10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
-                <Bot className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="font-orbitron font-semibold">{t('chat.title')}</h3>
-                <p className="text-xs text-white/50">Astronomy Assistant</p>
-              </div>
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Sparkles className="w-5 h-5 text-primary-400" />
+            <div className="absolute inset-0 bg-primary-400/30 blur-md rounded-full" />
+          </div>
+          <div>
+            <h3 className="font-orbitron font-semibold text-sm">Zenith AI</h3>
+            <p className="text-[10px] text-white/50">{t('ai.subtitle')}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={clearChat}
+            className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-white/50 hover:text-white"
+            title={t('actions.clearChat')}
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => useAppStore.getState().toggleChat()}
+            className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-white/50 hover:text-white"
+            title={t('actions.close')}
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto p-3 space-y-3 scroll-container">
+        {chatMessages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-center px-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500/30 to-accent-500/30 flex items-center justify-center mb-4">
+              <Sparkles className="w-8 h-8 text-primary-400" />
             </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={clearChat}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                title="Clear chat"
-              >
-                <RotateCcw className="w-4 h-4" />
-              </button>
-              <button
-                onClick={toggleChat}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+            <h4 className="font-semibold mb-2">{t('ai.welcome')}</h4>
+            <p className="text-sm text-white/60 mb-4">{t('ai.welcomeMessage')}</p>
+
+            {/* Quick Suggestions */}
+            <div className="flex flex-wrap gap-2 justify-center">
+              {suggestions.map((s, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleSuggestionClick(s.text)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-full text-xs transition-colors"
+                >
+                  {s.icon}
+                  <span>{s.text}</span>
+                </button>
+              ))}
             </div>
           </div>
-
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 hide-scrollbar">
-            {chatMessages.length === 0 && (
-              <div className="text-center py-8 space-y-6">
-                <div className="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-br from-primary-500/30 to-accent-500/30 flex items-center justify-center">
-                  <Sparkles className="w-10 h-10 text-primary-400" />
-                </div>
-                <div>
-                  <p className="text-white/80 mb-1">Welcome to Zenith AI</p>
-                  <p className="text-sm text-white/50">Ask me about satellites, constellations, planets, and more!</p>
-                </div>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {suggestions.map((s, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setInput(s.text)}
-                      className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm transition-colors"
-                    >
-                      {s.icon}
-                      <span className="text-white/70">{s.text}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {chatMessages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex gap-3 ${message.role === 'user' ? 'flex-row-reverse' : ''}`}
+        ) : (
+          <>
+            {chatMessages.map((msg) => (
+              <motion.div
+                key={msg.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
                 <div
-                  className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center ${
-                    message.role === 'user'
-                      ? 'bg-primary-500/30'
-                      : 'bg-gradient-to-br from-accent-500/30 to-primary-500/30'
+                  className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    msg.role === 'user'
+                      ? 'bg-accent-500/20 text-accent-400'
+                      : 'bg-primary-500/20 text-primary-400'
                   }`}
                 >
-                  {message.role === 'user' ? (
-                    <User className="w-4 h-4 text-primary-400" />
-                  ) : (
-                    <Bot className="w-4 h-4 text-accent-400" />
-                  )}
+                  {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                 </div>
                 <div
-                  className={`max-w-[80%] p-3 rounded-2xl ${
-                    message.role === 'user'
-                      ? 'bg-primary-500/20 rounded-tr-sm'
-                      : 'bg-white/10 rounded-tl-sm'
+                  className={`px-3 py-2 rounded-xl text-sm max-w-[80%] ${
+                    msg.role === 'user'
+                      ? 'bg-accent-500/20 text-white'
+                      : 'bg-white/10 text-white/90'
                   }`}
                 >
-                  <p className="text-sm leading-relaxed">{message.content}</p>
+                  {msg.content}
                 </div>
-              </div>
+              </motion.div>
             ))}
 
             {isTyping && (
-              <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-500/30 to-primary-500/30 flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-accent-400" />
+              <div className="flex gap-2">
+                <div className="w-7 h-7 rounded-full bg-primary-500/20 flex items-center justify-center">
+                  <Bot className="w-4 h-4 text-primary-400" />
                 </div>
-                <div className="bg-white/10 rounded-2xl rounded-tl-sm p-3">
+                <div className="bg-white/10 px-3 py-2 rounded-xl">
                   <div className="flex gap-1">
                     <span className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                     <span className="w-2 h-2 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
@@ -224,31 +210,31 @@ export default function AIChat() {
                 </div>
               </div>
             )}
+          </>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
 
-            <div ref={messagesEndRef} />
-          </div>
-
-          <div className="p-4 border-t border-white/10">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder={t('chat.placeholder')}
-                className="cosmic-input flex-1"
-              />
-              <button
-                onClick={handleSend}
-                disabled={!input.trim()}
-                className="btn-primary px-4 disabled:opacity-50"
-              >
-                <Send className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+      {/* Input */}
+      <div className="p-3 border-t border-white/10">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+            placeholder={t('ai.placeholder')}
+            className="cosmic-input flex-1 py-2 text-sm"
+          />
+          <button
+            onClick={handleSend}
+            disabled={!input.trim()}
+            className="px-4 py-2 bg-gradient-to-r from-primary-600 to-accent-600 rounded-xl transition-all hover:from-primary-500 hover:to-accent-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -9,6 +9,8 @@ import {
   MessageCircle,
   Settings,
   Info,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import SettingsModal from './SettingsModal';
@@ -39,6 +41,7 @@ export default function Navbar({ onMenuClick, onInfoClick }: NavbarProps) {
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAccessibilityOpen, setIsAccessibilityOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const langRef = useRef<HTMLDivElement>(null);
   const { isChatOpen, toggleChat } = useAppStore();
 
@@ -72,7 +75,7 @@ export default function Navbar({ onMenuClick, onInfoClick }: NavbarProps) {
 
   return (
     <>
-      <nav className="h-16 px-4 bg-cosmic-dark/95 backdrop-blur-xl border-b border-white/10 flex items-center justify-between">
+      <nav className="navbar-fixed px-4 flex items-center justify-between">
         {/* Left - Logo and Menu */}
         <div className="flex items-center gap-3">
           <button
@@ -103,9 +106,9 @@ export default function Navbar({ onMenuClick, onInfoClick }: NavbarProps) {
           <NavItem icon={<Info className="w-4 h-4" />} label={t('nav.about')} />
         </div>
 
-        {/* Right - Actions */}
+        {/* Right - Actions (Always Visible) */}
         <div className="flex items-center gap-1">
-          {/* Language Selector */}
+          {/* Language Selector - Always visible */}
           <div className="relative" ref={langRef}>
             <button
               onClick={() => setIsLangOpen(!isLangOpen)}
@@ -118,15 +121,17 @@ export default function Navbar({ onMenuClick, onInfoClick }: NavbarProps) {
               </span>
             </button>
 
+            {/* Language Dropdown - z-index: 1200 */}
             <AnimatePresence>
               {isLangOpen && (
                 <motion.div
                   initial={{ opacity: 0, y: 8, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                  className="absolute top-full right-0 mt-2 w-40 bg-cosmic-dark/95 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden shadow-xl z-50"
+                  className="dropdown-menu w-44 bg-cosmic-dark/98 backdrop-blur-xl rounded-xl border border-white/10 overflow-hidden shadow-2xl"
+                  style={{ zIndex: 1200 }}
                 >
-                  <div className="max-h-60 overflow-y-auto">
+                  <div className="max-h-60 overflow-y-auto scroll-container">
                     {languages.map((lang) => (
                       <button
                         key={lang.code}
@@ -147,7 +152,20 @@ export default function Navbar({ onMenuClick, onInfoClick }: NavbarProps) {
             </AnimatePresence>
           </div>
 
-          {/* Accessibility */}
+          {/* Theme Toggle - Always visible */}
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+            aria-label="Toggle theme"
+          >
+            {isDarkMode ? (
+              <Sun className="w-4 h-4 text-yellow-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-blue-300" />
+            )}
+          </button>
+
+          {/* Accessibility - Always visible */}
           <button
             onClick={() => setIsAccessibilityOpen(true)}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
@@ -156,7 +174,7 @@ export default function Navbar({ onMenuClick, onInfoClick }: NavbarProps) {
             <Eye className="w-4 h-4" />
           </button>
 
-          {/* Settings */}
+          {/* Settings - Always visible */}
           <button
             onClick={() => setIsSettingsOpen(true)}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
@@ -165,16 +183,16 @@ export default function Navbar({ onMenuClick, onInfoClick }: NavbarProps) {
             <Settings className="w-4 h-4" />
           </button>
 
-          {/* Info Panel Toggle */}
+          {/* Info Panel Toggle - Hidden on desktop */}
           <button
             onClick={onInfoClick}
-            className="hidden xl:block p-2 hover:bg-white/10 rounded-lg transition-colors"
+            className="hidden p-2 hover:bg-white/10 rounded-lg transition-colors xl:block"
             aria-label="Info panel"
           >
             <Info className="w-4 h-4" />
           </button>
 
-          {/* Zenith AI Button */}
+          {/* Zenith AI Button - Always visible */}
           <button
             onClick={toggleChat}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-sm font-medium ${
@@ -189,6 +207,7 @@ export default function Navbar({ onMenuClick, onInfoClick }: NavbarProps) {
         </div>
       </nav>
 
+      {/* Modals - z-index: 1300 */}
       <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
       <AccessibilityPanel isOpen={isAccessibilityOpen} onClose={() => setIsAccessibilityOpen(false)} />
     </>
